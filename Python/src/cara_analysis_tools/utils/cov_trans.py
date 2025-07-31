@@ -14,6 +14,7 @@ from cara_analysis_tools.utils.datatypes import (
     valid_3x3_matrix,
     valid_vector,
     )
+from cara_analysis_tools.utils.aug_math import cov_make_symmetric
 
 #TODO remove pudb import
 #import pudb
@@ -74,6 +75,10 @@ def ric2eci(ric: MatrixType,
     
     # Transform the covariance matrix to ECI coordinates
     eci = RICtoECI @ ric @ RICtoECI.T
+    
+    # Make the covariance symmetric, if needed
+    if make_symmetric:
+        eci = cov_make_symmetric(eci)
     
     return eci
     

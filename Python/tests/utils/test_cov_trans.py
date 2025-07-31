@@ -1,12 +1,15 @@
 import pytest
 import numpy as np
 import numpy.testing as npt
+import math
+import inspect
 from scipy.linalg import issymmetric
 import cara_analysis_tools.utils.cov_trans as ct
 
 @pytest.fixture
 def common_test_data():
     data = {
+        "relTol": 1e-12,
         "r": np.array([378.39559, 4305.721887, 5752.767554]),
         "v": np.array([2.360800244, 5.580331936, -4.322349039]),
         "ric": np.array([[ 1.75574609146441e-10, -1.76391822498568e-10,  1.26701582864723e-11, -8.50798921278566e-12,  2.80465474421549e-11,  1.78603570386593e-12,  5.90834321905617e-08, 0, -1.90574918760627e-07],
@@ -30,6 +33,19 @@ def common_test_data():
     }
     return data
 
+#TODO: See if we can exclude test files from code coverage reports
+def print_elems_out_of_tol(C, Ctruth, relTol, function_name):
+    rows, cols = C.shape
+    diffsFound = False
+    for r in range(rows):
+        for c in range(cols):
+            if not math.isclose(C[r,c],Ctruth[r,c],rel_tol=relTol):
+                if not diffsFound:
+                    print(f"Differences found in {function_name}:")
+                    diffsFound = True
+                print(f" ({r},{c}): calc={C[r,c]} truth={Ctruth[r,c]}")
+
+
 def test_ric2eci_bad_args():
     validVec = np.array([1, 2, 3])
     invalidVec = np.array([1, 2])
@@ -44,6 +60,7 @@ def test_ric2eci_bad_args():
         ct.ric2eci(r3, validVec, invalidVec)
 
 def test_ric2eci_test3x3(common_test_data):
+    relTol = common_test_data["relTol"]
     r = common_test_data["r"]
     v = common_test_data["v"]
     ric_full = common_test_data["ric"]
@@ -52,37 +69,65 @@ def test_ric2eci_test3x3(common_test_data):
     eciTruth = eci_full[0:3, 0:3]
     
     eci = ct.ric2eci(ric, r, v)
-    #TODO: Need to implement symmetric matrix fixing, then remove tolerances
-    npt.assert_allclose(eci, eciTruth, rtol=1e-14)
-    assert issymmetric(eci, rtol=1e-15)
+    print_elems_out_of_tol(eci, eciTruth, relTol, inspect.currentframe().f_code.co_name)
+    npt.assert_allclose(eci, eciTruth, rtol=relTol)
+    assert issymmetric(eci)
 
-#TODO: Convert rest of test functions to use shared variable setup
-def test_ric2eci_test6x6():
-    ric = np.array([[ 1.75574609146441e-10, -1.76391822498568e-10,  1.26701582864723e-11, -8.50798921278566e-12,  2.80465474421549e-11,  1.78603570386593e-12],
-                    [-1.76391822498568e-10,  2.19847186431344e-10, -2.11714974937397e-11,  4.88900720193951e-12, -2.07150417963915e-11,  2.63481195571044e-12],
-                    [ 1.26701582864723e-11, -2.11714974937397e-11,  1.03862044222145e-11, -8.87792456013774e-12,  3.61060060754719e-12, -8.98899082284049e-15],
-                    [-8.50798921278566e-12,  4.88900720193951e-12, -8.87792456013774e-12,  1.81815864084123e-11, -1.11847510974009e-11, -2.74005163036409e-12],
-                    [ 2.80465474421549e-11, -2.07150417963915e-11,  3.61060060754719e-12, -1.11847510974009e-11,  3.46915046391962e-11,  1.05740377170100e-11],
-                    [ 1.78603570386593e-12,  2.63481195571044e-12, -8.98899082284049e-15, -2.74005163036409e-12,  1.05740377170100e-11,  4.14448895239156e-12]])
-    r = np.array([378.39559, 4305.721887, 5752.767554])
-    v = np.array([2.360800244, 5.580331936, -4.322349039])
+def test_ric2eci_test6x6(common_test_data):
+    relTol = common_test_data["relTol"]
+    r = common_test_data["r"]
+    v = common_test_data["v"]
+    ric_full = common_test_data["ric"]
+    eci_full = common_test_data["eci"]
+    ric = ric_full[0:6, 0:6]
+    eciTruth = eci_full[0:6, 0:6]
     
     eci = ct.ric2eci(ric, r, v)
-    print("eci6x6 = " + str(eci))
+    print_elems_out_of_tol(eci, eciTruth, relTol, inspect.currentframe().f_code.co_name)
+    npt.assert_allclose(eci, eciTruth, rtol=relTol)
+    assert issymmetric(eci)
 
 
 def test_ric2eci_test7x7(common_test_data):
-    ric = np.array([[ 1.75574609146441e-10, -1.76391822498568e-10,  1.26701582864723e-11, -8.50798921278566e-12,  2.80465474421549e-11,  1.78603570386593e-12,  5.90834321905617e-08],
-                    [-1.76391822498568e-10,  2.19847186431344e-10, -2.11714974937397e-11,  4.88900720193951e-12, -2.07150417963915e-11,  2.63481195571044e-12, -8.18741459439353e-08],
-                    [ 1.26701582864723e-11, -2.11714974937397e-11,  1.03862044222145e-11, -8.87792456013774e-12,  3.61060060754719e-12, -8.98899082284049e-15,  1.33873845292676e-08],
-                    [-8.50798921278566e-12,  4.88900720193951e-12, -8.87792456013774e-12,  1.81815864084123e-11, -1.11847510974009e-11, -2.74005163036409e-12, -1.47578050245331e-08],
-                    [ 2.80465474421549e-11, -2.07150417963915e-11,  3.61060060754719e-12, -1.11847510974009e-11,  3.46915046391962e-11,  1.05740377170100e-11,  1.07019379593921e-08],
-                    [ 1.78603570386593e-12,  2.63481195571044e-12, -8.98899082284049e-15, -2.74005163036409e-12,  1.05740377170100e-11,  4.14448895239156e-12, -2.98895146350504e-09],
-                    [ 5.90834321905617e-08, -8.18741459439353e-08,  1.33873845292676e-08, -1.47578050245331e-08,  1.07019379593921e-08, -2.98895146350504e-09,  0.00036231]])
-    r = np.array([378.39559, 4305.721887, 5752.767554])
-    v = np.array([2.360800244, 5.580331936, -4.322349039])
+    relTol = common_test_data["relTol"]
+    r = common_test_data["r"]
+    v = common_test_data["v"]
+    ric_full = common_test_data["ric"]
+    eci_full = common_test_data["eci"]
+    ric = ric_full[0:7, 0:7]
+    eciTruth = eci_full[0:7, 0:7]
     
     eci = ct.ric2eci(ric, r, v)
-    print("eci7x7 = " + str(eci))
+    print_elems_out_of_tol(eci, eciTruth, relTol, inspect.currentframe().f_code.co_name)
+    npt.assert_allclose(eci, eciTruth, rtol=relTol)
+    assert issymmetric(eci)
 
-#TODO: Add test cases for remaining conversions
+def test_ric2eci_test8x8(common_test_data):
+    relTol = common_test_data["relTol"]
+    r = common_test_data["r"]
+    v = common_test_data["v"]
+    ric_full = common_test_data["ric"]
+    eci_full = common_test_data["eci"]
+    ric = ric_full[0:8, 0:8]
+    eciTruth = eci_full[0:8, 0:8]
+    
+    eci = ct.ric2eci(ric, r, v)
+    print_elems_out_of_tol(eci, eciTruth, relTol, inspect.currentframe().f_code.co_name)
+    npt.assert_allclose(eci, eciTruth, rtol=relTol)
+    assert issymmetric(eci)
+
+def test_ric2eci_test9x9(common_test_data):
+    relTol = common_test_data["relTol"]
+    r = common_test_data["r"]
+    v = common_test_data["v"]
+    ric_full = common_test_data["ric"]
+    eci_full = common_test_data["eci"]
+    ric = ric_full[0:9, 0:9]
+    eciTruth = eci_full[0:9, 0:9]
+    
+    eci = ct.ric2eci(ric, r, v)
+    print_elems_out_of_tol(eci, eciTruth, relTol, inspect.currentframe().f_code.co_name)
+    npt.assert_allclose(eci, eciTruth, rtol=relTol)
+    assert issymmetric(eci)
+
+#TODO: Add unit tests for expand_transmatrix

@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.6">
-<title>cara_analysis_tools.utils API documentation</title>
-<meta name="description" content="">
+<title>cara_analysis_tools.utils.aug_math API documentation</title>
+<meta name="description" content="Augmented math module …">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
@@ -33,31 +33,92 @@ el.replaceWith(d);
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>cara_analysis_tools.utils</code></h1>
+<h1 class="title">Module <code>cara_analysis_tools.utils.aug_math</code></h1>
 </header>
 <section id="section-intro">
+<p>Augmented math module</p>
+<p>Contains some general purpose math utilities for the cara_analysis_tools
+library.</p>
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt><code class="name"><a title="cara_analysis_tools.utils.aug_math" href="aug_math.html">cara_analysis_tools.utils.aug_math</a></code></dt>
+<dt id="cara_analysis_tools.utils.aug_math.cov_make_symmetric"><code class="name flex">
+<span>def <span class="ident">cov_make_symmetric</span></span>(<span>C: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]]) ‑> numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]]</span>
+</code></dt>
 <dd>
-<div class="desc"><p>Augmented math module …</p></div>
-</dd>
-<dt><code class="name"><a title="cara_analysis_tools.utils.cov_trans" href="cov_trans.html">cara_analysis_tools.utils.cov_trans</a></code></dt>
-<dd>
-<div class="desc"><p>Provides covariance transformations between coordinate frames …</p></div>
-</dd>
-<dt><code class="name"><a title="cara_analysis_tools.utils.datatypes" href="datatypes.html">cara_analysis_tools.utils.datatypes</a></code></dt>
-<dd>
-<div class="desc"><p>Defines datatypes and associated checker functions used by
-cara_analysis_tools</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cov_make_symmetric(C: MatrixType) -&gt; MatrixType:
+    &#34;&#34;&#34;Makes a covariance matrix diagonlly symmetric
+
+    Parameters
+    ----------
+    C : MatrixType
+        Covariance matrix, must be nxn with n &gt;= 2
+
+    Returns
+    -------
+    MatrixType
+        Symmetrized version of the covariance matrix, nxn
+    
+    Raises
+    ------
+    ValueError
+        Occurs when a non-square matrix that isn&#39;t 2x2 or more is passed
+        in.
+    &#34;&#34;&#34;
+    
+    # Check the data type
+    if not isinstance(C, np.ndarray):
+        raise ValueError(&#34;Matrix must be a numpy array!&#34;)
+        
+    # Check matrix size
+    cov_size = np.shape(C)
+    if len(cov_size) != 2:
+        raise ValueError(&#34;Matrix must be a 2D numpy array&#34;)
+    if cov_size[0] != cov_size[1]:
+        raise ValueError(&#34;Matrix must be an nxn 2D numpy array&#34;)
+    if cov_size[0] &lt; 2:
+        raise ValueError(&#34;Matrix must be an nxn 2D numpy array with n &gt;= 2&#34;)
+    
+    if issymmetric(C):
+        # Don&#39;t change anything if the matrix is already symmetric
+        Csym = C
+    else:
+        Ct = C.T
+        # Average out any off-diagonal asymmetries
+        Csym = (C + Ct) / 2
+        # Reflect about the diagonal to ensure diagonal symmetry absolutely
+        Csym = np.triu(Csym) + np.triu(Csym, k=1).T
+    
+    return Csym</code></pre>
+</details>
+<div class="desc"><p>Makes a covariance matrix diagonlly symmetric</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>C</code></strong> :&ensp;<code>MatrixType</code></dt>
+<dd>Covariance matrix, must be nxn with n &gt;= 2</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>MatrixType</code></dt>
+<dd>Symmetrized version of the covariance matrix, nxn</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>Occurs when a non-square matrix that isn't 2x2 or more is passed
+in.</dd>
+</dl></div>
 </dd>
 </dl>
-</section>
-<section>
-</section>
-<section>
 </section>
 <section>
 </section>
@@ -69,14 +130,12 @@ cara_analysis_tools</p></div>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="cara_analysis_tools" href="../index.html">cara_analysis_tools</a></code></li>
+<li><code><a title="cara_analysis_tools.utils" href="index.html">cara_analysis_tools.utils</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
-<ul>
-<li><code><a title="cara_analysis_tools.utils.aug_math" href="aug_math.html">cara_analysis_tools.utils.aug_math</a></code></li>
-<li><code><a title="cara_analysis_tools.utils.cov_trans" href="cov_trans.html">cara_analysis_tools.utils.cov_trans</a></code></li>
-<li><code><a title="cara_analysis_tools.utils.datatypes" href="datatypes.html">cara_analysis_tools.utils.datatypes</a></code></li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="cara_analysis_tools.utils.aug_math.cov_make_symmetric" href="#cara_analysis_tools.utils.aug_math.cov_make_symmetric">cov_make_symmetric</a></code></li>
 </ul>
 </li>
 </ul>
