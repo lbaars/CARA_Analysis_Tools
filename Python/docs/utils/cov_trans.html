@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>cara_analysis_tools.utils.cov_trans API documentation</title>
+<meta name="description" content="Provides transformations between coordinate frames …">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>cara_analysis_tools.utils.cov_trans</code></h1>
+</header>
+<section id="section-intro">
+<p>Provides transformations between coordinate frames</p>
+<p>Using the inertial position and velocity passed in, the functions in
+this module will transform covariance matrices between coordinate frames
+such as RIC, ECI, etc.</p>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="cara_analysis_tools.utils.cov_trans.expand_transmatrix"><code class="name flex">
+<span>def <span class="ident">expand_transmatrix</span></span>(<span>trans: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]],<br>len: int) ‑> numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def expand_transmatrix(trans: MatrixType, len: int) -&gt; MatrixType:
+    &#34;&#34;&#34;Expands a transformation matrix to the length passed in
+    
+    Takes a 3x3 transformation matrix and expands it to 6x6, or nxn with
+    n&gt;6. For a 6x6 output matrix, the original transformation matrix is
+    repeated in the lower right quadrant while the upper right and lower
+    left quadrants are zero filled. For an nxn output matrix, each term
+    past 6 will have off-diagonals zero filled and the diagonals filled
+    with ones.
+
+    Parameters
+    ----------
+    trans : MatrixType
+        A 3x3 transformation matrix
+    len : int
+        Size of the expanded matrix, must be 6 or n with n&gt;6.
+
+    Returns
+    -------
+    MatrixType
+        Expanded transformation matrix with dimensions equal to len.
+    
+    Raises
+    ------
+    ValueError
+        Occurs when the transformation matrix isn&#39;t a valid 3x3
+        transformation matrix. This exception is also raised if len is
+        not greater than or equal to 6.
+    &#34;&#34;&#34;
+    
+    # Check for valid input types
+    if not valid_3x3_matrix(trans):
+        raise ValueError(&#34;trans matrix must be 3x3 NDarray&#34;)
+    if len &lt; 6:
+        raise ValueError(&#34;len must be &gt;= 6&#34;)
+    
+    # Determine the number of additional terms
+    additional_terms = len - 6
+    
+    # Start by creating the 6x6
+    zero = np.zeros((3,3))
+    topHalf = np.concatenate((trans, zero), axis = 1)
+    bottomHalf = np.concatenate((zero, trans), axis = 1)
+    trans = np.concatenate((topHalf, bottomHalf), axis = 0)
+    
+    # Expand the matrix further if needed
+    if additional_terms &gt; 0:
+        zeroTop = np.zeros((6,additional_terms))
+        zeroBottom = np.zeros((additional_terms,6))
+        ident = np.eye(additional_terms)
+        topHalf = np.concatenate((trans, zeroTop), axis = 1)
+        bottomHalf = np.concatenate((zeroBottom, ident), axis = 1)
+        trans = np.concatenate((topHalf, bottomHalf), axis = 0)
+    
+    return trans</code></pre>
+</details>
+<div class="desc"><p>Expands a transformation matrix to the length passed in</p>
+<p>Takes a 3x3 transformation matrix and expands it to 6x6, or nxn with
+n&gt;6. For a 6x6 output matrix, the original transformation matrix is
+repeated in the lower right quadrant while the upper right and lower
+left quadrants are zero filled. For an nxn output matrix, each term
+past 6 will have off-diagonals zero filled and the diagonals filled
+with ones.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>trans</code></strong> :&ensp;<code>MatrixType</code></dt>
+<dd>A 3x3 transformation matrix</dd>
+<dt><strong><code>len</code></strong> :&ensp;<code>int</code></dt>
+<dd>Size of the expanded matrix, must be 6 or n with n&gt;6.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>MatrixType</code></dt>
+<dd>Expanded transformation matrix with dimensions equal to len.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>Occurs when the transformation matrix isn't a valid 3x3
+transformation matrix. This exception is also raised if len is
+not greater than or equal to 6.</dd>
+</dl></div>
+</dd>
+<dt id="cara_analysis_tools.utils.cov_trans.ric2eci"><code class="name flex">
+<span>def <span class="ident">ric2eci</span></span>(<span>ric: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]],<br>r: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]],<br>v: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]],<br>make_symmetric: bool = True) ‑> numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def ric2eci(ric: MatrixType,
+            r: VectorType,
+            v: VectorType,
+            make_symmetric: bool = True) -&gt; MatrixType:
+    &#34;&#34;&#34;Transforms input vector or matrix from the RIC to the ECI frame.
+
+    Parameters
+    ----------
+    ric : MatrixType
+        Covariance matrix in RIC frame, size is 3x3, 6x6, or nxn with
+        n &gt; 6.
+    r : VectorType
+        ECI position vector in km, size is 1x3.
+    v : VectorType
+        ECI velocity vector in km/sec, size is 1x3.
+    make_symmetric : bool, optional
+        _description_, by default True
+
+    Returns
+    -------
+    MatrixType
+        Covariance matrix in ECI frame, size is the same as the input
+        ric matrix.
+    
+    Raises
+    ------
+    ValueError
+        Occurs when invalid covariance matrix or vectors are passed in.
+    &#34;&#34;&#34;
+    
+    # Check for valid input types
+    if not valid_cov_matrix(ric):
+        raise ValueError(&#34;ric matrix must be 3x3, 6x6, or nxn (n&gt;6)&#34;
+                         + &#34; symmetric NDarray&#34;)
+    if not valid_vector(r):
+        raise ValueError(&#34;r vector must be 1x3 NDarray&#34;)
+    if not valid_vector(v):
+        raise ValueError(&#34;v vector must be 1x3 NDarray&#34;)
+    
+    # Setting up vectors in the radial, in-track, and cross-track directions
+    h = np.cross(r, v)
+    rhat = r / np.linalg.norm(r)
+    chat = h / np.linalg.norm(h)
+    ihat = np.cross(chat, rhat)
+    
+    # Create rotation matrix for 3x3 covariance
+    RICtoECI = np.stack((rhat, ihat, chat), axis = 1)
+    
+    # Determine how many additional terms are needed
+    cov_size = np.shape(ric)[0]
+    if cov_size &gt;= 6:
+        RICtoECI = expand_transmatrix(RICtoECI, cov_size)
+    
+    # Transform the covariance matrix to ECI coordinates
+    eci = RICtoECI @ ric @ RICtoECI.T
+    
+    return eci</code></pre>
+</details>
+<div class="desc"><p>Transforms input vector or matrix from the RIC to the ECI frame.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ric</code></strong> :&ensp;<code>MatrixType</code></dt>
+<dd>Covariance matrix in RIC frame, size is 3x3, 6x6, or nxn with
+n &gt; 6.</dd>
+<dt><strong><code>r</code></strong> :&ensp;<code>VectorType</code></dt>
+<dd>ECI position vector in km, size is 1x3.</dd>
+<dt><strong><code>v</code></strong> :&ensp;<code>VectorType</code></dt>
+<dd>ECI velocity vector in km/sec, size is 1x3.</dd>
+<dt><strong><code>make_symmetric</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd><em>description</em>, by default True</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>MatrixType</code></dt>
+<dd>Covariance matrix in ECI frame, size is the same as the input
+ric matrix.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>Occurs when invalid covariance matrix or vectors are passed in.</dd>
+</dl></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="cara_analysis_tools.utils" href="index.html">cara_analysis_tools.utils</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="cara_analysis_tools.utils.cov_trans.expand_transmatrix" href="#cara_analysis_tools.utils.cov_trans.expand_transmatrix">expand_transmatrix</a></code></li>
+<li><code><a title="cara_analysis_tools.utils.cov_trans.ric2eci" href="#cara_analysis_tools.utils.cov_trans.ric2eci">ric2eci</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>
