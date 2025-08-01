@@ -10,7 +10,6 @@ from cara_analysis_tools.utils.datatypes import (
     MatrixType,
     )
 
-#TODO: Need to add unit tests for this function
 def cov_make_symmetric(C: MatrixType) -> MatrixType:
     """Makes a covariance matrix diagonlly symmetric
 
@@ -55,3 +54,4 @@ def cov_make_symmetric(C: MatrixType) -> MatrixType:
         Csym = np.triu(Csym) + np.triu(Csym, k=1).T
     
     return Csym
+

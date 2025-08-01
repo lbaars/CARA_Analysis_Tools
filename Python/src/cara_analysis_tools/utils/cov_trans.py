@@ -16,9 +16,6 @@ from cara_analysis_tools.utils.datatypes import (
     )
 from cara_analysis_tools.utils.aug_math import cov_make_symmetric
 
-#TODO remove pudb import
-#import pudb
-#pudb.set_trace()
 
 def ric2eci(ric: MatrixType,
             r: VectorType,

@@ -33,7 +33,6 @@ def common_test_data():
     }
     return data
 
-#TODO: See if we can exclude test files from code coverage reports
 def print_elems_out_of_tol(C, Ctruth, relTol, function_name):
     rows, cols = C.shape
     diffsFound = False
@@ -130,4 +129,80 @@ def test_ric2eci_test9x9(common_test_data):
     npt.assert_allclose(eci, eciTruth, rtol=relTol)
     assert issymmetric(eci)
 
-#TODO: Add unit tests for expand_transmatrix
+def test_expand_transmatrix_not3x3():
+    invalidMatrix = np.array([[1, 2], [3, 4]])
+    
+    with pytest.raises(ValueError):
+        ct.expand_transmatrix(invalidMatrix, 6)
+
+def test_expand_transmatrix_invalid_len():
+    mat = np.array([[1.0, 2, 3], [4, 5, 6], [7, 8, 9]])
+    
+    with pytest.raises(ValueError):
+        ct.expand_transmatrix(mat, 5)
+
+def check_expand_transmatrix_output(mat, outMat, expandSize):
+    # Check size of output matrix
+    outSize = np.shape(outMat)
+    assert len(outSize) == 2
+    assert outSize[0] == expandSize
+    assert outSize[1] == expandSize
+        
+    # Check upper left 3x3
+    for i in range(3):
+        for j in range(3):
+            assert outMat[i,j] == mat[i,j]
+            
+    # Check upper right and lower left 3x3s
+    for i in range(3):
+        for j in range(3, 6):
+            assert outMat[i,j] == 0.0
+            assert outMat[j,i] == 0.0
+            
+    # Check lower right 3x3
+    for i in range(3, 6):
+        for j in range(3, 6):
+            assert outMat[i,j] == mat[i-3,j-3]
+            
+    numExtra = expandSize - 6
+    if numExtra > 0:
+        # Check off diagonals for extra elements
+        for i in range(6):
+            for j in range(6, numExtra):
+                assert outMat[i,j] == 0.0
+                assert outMat[j,i] == 0.0
+    
+        # Check diagonal for identitiy matrix
+        eye = np.eye(numExtra)
+        for i in range(6, numExtra):
+            for j in range(6, numExtra):
+                assert outMat[i,j] == eye[i-numExtra,j-numExtra]
+
+def test_expand_transmatrix_to6x6():
+    mat = np.array([[1.0, 2, 3], [4, 5, 6], [7, 8, 9]])
+    expandSize = 6
+    
+    outMat = ct.expand_transmatrix(mat, expandSize)
+    check_expand_transmatrix_output(mat, outMat, expandSize)
+
+def test_expand_transmatrix_to7x7():
+    mat = np.array([[1.0, 2, 3], [4, 5, 6], [7, 8, 9]])
+    expandSize = 7
+    
+    outMat = ct.expand_transmatrix(mat, expandSize)
+    check_expand_transmatrix_output(mat, outMat, expandSize)
+
+def test_expand_transmatrix_to8x8():
+    mat = np.array([[1.0, 2, 3], [4, 5, 6], [7, 8, 9]])
+    expandSize = 8
+    
+    outMat = ct.expand_transmatrix(mat, expandSize)
+    check_expand_transmatrix_output(mat, outMat, expandSize)
+
+def test_expand_transmatrix_to9x9():
+    mat = np.array([[1.0, 2, 3], [4, 5, 6], [7, 8, 9]])
+    expandSize = 9
+    
+    outMat = ct.expand_transmatrix(mat, expandSize)
+    check_expand_transmatrix_output(mat, outMat, expandSize)
+
