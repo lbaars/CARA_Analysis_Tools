@@ -149,20 +149,15 @@ def check_expand_transmatrix_output(mat, outMat, expandSize):
     assert outSize[1] == expandSize
         
     # Check upper left 3x3
-    for i in range(3):
-        for j in range(3):
-            assert outMat[i,j] == mat[i,j]
+    npt.assert_equal(outMat[0:3,0:3],mat)
             
     # Check upper right and lower left 3x3s
-    for i in range(3):
-        for j in range(3, 6):
-            assert outMat[i,j] == 0.0
-            assert outMat[j,i] == 0.0
+    zeros = np.zeros(shape = (3,3))
+    npt.assert_equal(outMat[0:3,3:6],zeros)
+    npt.assert_equal(outMat[3:6,0:3],zeros)
             
     # Check lower right 3x3
-    for i in range(3, 6):
-        for j in range(3, 6):
-            assert outMat[i,j] == mat[i-3,j-3]
+    npt.assert_equal(outMat[3:6,3:6],mat)
             
     numExtra = expandSize - 6
     if numExtra > 0:
