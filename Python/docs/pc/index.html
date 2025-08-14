@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.6">
-<title>cara_analysis_tools.prob_of_collision.utils API documentation</title>
-<meta name="description" content="Provides helper utilities for Probability of Collision algorithms.">
+<title>cara_analysis_tools.pc API documentation</title>
+<meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
@@ -33,106 +33,26 @@ el.replaceWith(d);
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>cara_analysis_tools.prob_of_collision.utils</code></h1>
+<h1 class="title">Module <code>cara_analysis_tools.pc</code></h1>
 </header>
 <section id="section-intro">
-<p>Provides helper utilities for Probability of Collision algorithms.</p>
 </section>
 <section>
-</section>
-<section>
-</section>
-<section>
-<h2 class="section-title" id="header-functions">Functions</h2>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt id="cara_analysis_tools.prob_of_collision.utils.product3x3"><code class="name flex">
-<span>def <span class="ident">product3x3</span></span>(<span>a: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]],<br>b: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]]) ‑> numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]]</span>
-</code></dt>
+<dt><code class="name"><a title="cara_analysis_tools.pc.pc_circle" href="pc_circle.html">cara_analysis_tools.pc.pc_circle</a></code></dt>
 <dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def product3x3(a: MatrixType, b: MatrixType) -&gt; MatrixType:
-    &#34;&#34;&#34;Vectorized 3x3 matrix multiplication routine
-    
-    Input and output matrices are nx9 2D numpy arrays representing n
-    separate matrix multiplications to perform. Each row represents a
-    matrix in the form of:
-     [x[0,0], x[0,1], x[0,2], x[1,0], x[1,1], x[1,2], x[2,0], x[2,1], x[2,2] ]
-    
-    Parameters
-    ----------
-    a : MatrixType
-        Left matrix in the computation, size nx9 (n&gt;0)
-    b : MatrixType
-        Right matrix in the computation, size nx9 (n&gt;0)
-
-    Returns
-    -------
-    MatrixType
-        Matrix product, size nx9 (n&gt;0)
-    
-    Raises
-    ------
-    ValueError
-        Occurs when the input matrices are not 2D numpy arrays with 9
-        columns or if the matrices are not the same size.
-    &#34;&#34;&#34;
-    
-    # Check the data type
-    if not isinstance(a, np.ndarray) or not isinstance(b, np.ndarray):
-        raise ValueError(&#34;Input arrays must be numpy arrays&#34;)
-        
-    # Check matrix size
-    a_size = np.shape(a)
-    b_size = np.shape(b)
-    if len(a_size) != 2 or len(b_size) != 2:
-        raise ValueError(&#34;Input arrays must be 2D numpy arrays&#34;)
-    if a_size[1] != 9 or b_size[1] != 9:
-        raise ValueError(&#34;Input arrays must each have 9 columns&#34;)
-    if a_size[0] != b_size[0]:
-        raise ValueError(&#34;Input arrays must have the same number of rows&#34;)
-    
-    # Calculate the product
-    out = np.full(shape = a_size, fill_value=np.nan)
-    out[:,0] = a[:,0]*b[:,0] + a[:,1]*b[:,3] + a[:,2]*b[:,6]
-    out[:,1] = a[:,0]*b[:,1] + a[:,1]*b[:,4] + a[:,2]*b[:,7]
-    out[:,2] = a[:,0]*b[:,2] + a[:,1]*b[:,5] + a[:,2]*b[:,8]
-    out[:,3] = a[:,3]*b[:,0] + a[:,4]*b[:,3] + a[:,5]*b[:,6]
-    out[:,4] = a[:,3]*b[:,1] + a[:,4]*b[:,4] + a[:,5]*b[:,7]
-    out[:,5] = a[:,3]*b[:,2] + a[:,4]*b[:,5] + a[:,5]*b[:,8]
-    out[:,6] = a[:,6]*b[:,0] + a[:,7]*b[:,3] + a[:,8]*b[:,6]
-    out[:,7] = a[:,6]*b[:,1] + a[:,7]*b[:,4] + a[:,8]*b[:,7]
-    out[:,8] = a[:,6]*b[:,2] + a[:,7]*b[:,5] + a[:,8]*b[:,8]
-    
-    return out</code></pre>
-</details>
-<div class="desc"><p>Vectorized 3x3 matrix multiplication routine</p>
-<p>Input and output matrices are nx9 2D numpy arrays representing n
-separate matrix multiplications to perform. Each row represents a
-matrix in the form of:
-[x[0,0], x[0,1], x[0,2], x[1,0], x[1,1], x[1,2], x[2,0], x[2,1], x[2,2] ]</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>a</code></strong> :&ensp;<code>MatrixType</code></dt>
-<dd>Left matrix in the computation, size nx9 (n&gt;0)</dd>
-<dt><strong><code>b</code></strong> :&ensp;<code>MatrixType</code></dt>
-<dd>Right matrix in the computation, size nx9 (n&gt;0)</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>MatrixType</code></dt>
-<dd>Matrix product, size nx9 (n&gt;0)</dd>
-</dl>
-<h2 id="raises">Raises</h2>
-<dl>
-<dt><code>ValueError</code></dt>
-<dd>Occurs when the input matrices are not 2D numpy arrays with 9
-columns or if the matrices are not the same size.</dd>
-</dl></div>
+<div class="desc"><p>Provides probability of collision calculations</p></div>
+</dd>
+<dt><code class="name"><a title="cara_analysis_tools.pc.utils" href="utils.html">cara_analysis_tools.pc.utils</a></code></dt>
+<dd>
+<div class="desc"><p>Provides helper utilities for Probability of Collision algorithms.</p></div>
 </dd>
 </dl>
+</section>
+<section>
+</section>
+<section>
 </section>
 <section>
 </section>
@@ -144,12 +64,13 @@ columns or if the matrices are not the same size.</dd>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="cara_analysis_tools.prob_of_collision" href="index.html">cara_analysis_tools.prob_of_collision</a></code></li>
+<li><code><a title="cara_analysis_tools" href="../index.html">cara_analysis_tools</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="cara_analysis_tools.prob_of_collision.utils.product3x3" href="#cara_analysis_tools.prob_of_collision.utils.product3x3">product3x3</a></code></li>
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<ul>
+<li><code><a title="cara_analysis_tools.pc.pc_circle" href="pc_circle.html">cara_analysis_tools.pc.pc_circle</a></code></li>
+<li><code><a title="cara_analysis_tools.pc.utils" href="utils.html">cara_analysis_tools.pc.utils</a></code></li>
 </ul>
 </li>
 </ul>

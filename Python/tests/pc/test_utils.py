@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import numpy.testing as npt
-import cara_analysis_tools.prob_of_collision.utils as pcu
+import cara_analysis_tools.pc.utils as pcu
 
 def test_product3x3_not_np_array():
     badArray = "asdf"
