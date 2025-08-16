@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.6">
 <title>cara_analysis_tools.pc.pc_circle API documentation</title>
-<meta name="description" content="Provides probability of collision calculations">
+<meta name="description" content="Provides the Pc Circle 2D probability of collision calculation.">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
@@ -36,13 +36,244 @@ el.replaceWith(d);
 <h1 class="title">Module <code>cara_analysis_tools.pc.pc_circle</code></h1>
 </header>
 <section id="section-intro">
-<p>Provides probability of collision calculations</p>
+<p>Provides the Pc Circle 2D probability of collision calculation.</p>
 </section>
 <section>
 </section>
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="cara_analysis_tools.pc.pc_circle.pc_circle"><code class="name flex">
+<span>def <span class="ident">pc_circle</span></span>(<span>r1: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]],<br>v1: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]],<br>C1: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]],<br>r2: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]],<br>v2: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]],<br>C2: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]],<br>hbr: float,<br>params: dict = {}) ‑> tuple[float, dict]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def pc_circle(r1: VectorType, v1: VectorType, C1: MatrixType,
+              r2: VectorType, v2: VectorType, C2: MatrixType,
+              hbr: float, params: dict = {}) -&gt; tuple[float, dict]:
+    &#34;&#34;&#34;Computes Pc for state/cov input by integrating over a circle on
+    the conjunction plane.
+    
+    TODO: Need to fill in with details once implemented
+
+    Parameters
+    ----------
+    r1 : VectorType
+        Primary object&#39;s position vector in inertial cartesian
+        coordinates, size is 1x3.
+    v1 : VectorType
+        Primary object&#39;s velocity vector in inertial cartesian
+        coordinates, size is 1x3.
+    C1 : MatrixType
+        Primary object&#39;s covariance matrix in the same inertial
+        cartesian coordinate frame as the position and velocity, size is
+        3x3, 6x6, or nxn with n &gt; 6.
+    r2 : VectorType
+        Secondary object&#39;s position vector in inertial cartesian
+        coordinates, size is 1x3.
+    v2 : VectorType
+        Secondary object&#39;s velocity vector in inertial cartesian
+        coordinates, size is 1x3.
+    C2 : MatrixType
+        Secondary object&#39;s covariance matrix in the same inertial
+        cartesian coordinate frame as the position and velocity, size is
+        3x3, 6x6, or nxn with n &gt; 6.
+    hbr : float
+        Coimbined hard body radius of the primary and secondary objects.
+    params : dict, optional
+        TODO Fill this section out if needed
+        _description_, by default {}
+
+    Returns
+    -------
+    tuple[float, dict]
+        Pc - Computed probability of collision
+        out - Dictionary containing the following supplemental
+              information:
+          IsPosDef - Flag indicating if the combined and marginalized
+                     covariance has a negative eigenvalue.
+          IsRemediated - Flag indicating if the combined and
+                         marginalized 2x2 covariance was remediated,
+                         either successfully or not.
+          Amat - Combined covariance projected onto the nominal
+                 conjunction plane.
+          xm, zm - Position of the mean relative miss distance on the
+                   conjunction plane.
+          sx, sz - Sigma values of the relative miss distance PDF on the
+                   conjunction plane.
+          r1,v1,C1,r2,v2,C2,hbr - Input parameters saved off for use in
+                                  other functions.
+    
+    Raises
+    ------
+    ValueError
+        Occurs when invalid covariance matrix or vectors are passed in.
+    
+    References
+    ----------
+    Alfano, S. &#34;A Numerical Implementation of Spherical Object Collision
+    Probability.&#34; Journal of the Astronautical Sciences, Vol. 53, No. 1,
+    pp. 103-109, Jan-Mar 2005.
+    &#34;&#34;&#34;
+    
+    # Check for valid vectors and matrices
+    if not valid_vector(r1):
+        raise ValueError(&#34;r1 vector must be 1x3 NDarray&#34;)
+    if not valid_vector(v1):
+        raise ValueError(&#34;v1 vector must be 1x3 NDarray&#34;)
+    if not valid_cov_matrix(C1):
+        raise ValueError(&#34;C1 matrix must be 3x3, 6x6, or nxn (n&gt;6)&#34;
+                         + &#34; symmetric NDarray&#34;)
+    if not valid_vector(r2):
+        raise ValueError(&#34;r2 vector must be 1x3 NDarray&#34;)
+    if not valid_vector(v2):
+        raise ValueError(&#34;v2 vector must be 1x3 NDarray&#34;)
+    if not valid_cov_matrix(C2):
+        raise ValueError(&#34;C2 matrix must be 3x3, 6x6, or nxn (n&gt;6)&#34;
+                         + &#34; symmetric NDarray&#34;)
+    c1_size = np.size(C1)
+    c2_size = np.size(C2)
+    if c1_size != c2_size:
+        raise ValueError(&#34;C1 and C2 matrices must be the same size&#34;)
+    
+    # Set defaults within params structure
+    if &#34;EstimationMode&#34; not in params:
+        params[&#34;EstimationMode&#34;] = 64
+    estimation_mode = params[&#34;EstimationMode&#34;]
+    
+    if &#34;WarningLevel&#34; not in params:
+        params[&#34;WarningLevel&#34;] = 0
+    warning_level = params[&#34;WarningLevel&#34;]
+    
+    if &#34;PriSecCovProcessing&#34; not in params:
+        params[&#34;PriSecCovProcessing&#34;] = False
+    
+    # Check for valid and sensible estimation_mode
+    if estimation_mode &lt;= 0:
+        if estimation_mode != 0 and estimation_mode != -1:
+            raise ValueError(&#34;Invalid EstimationMode&#34;)
+    else:
+        if not isinstance(estimation_mode, int):
+            raise ValueError(&#34;Invalid EstimationMode&#34;)
+        elif estimation_mode &lt; 16 and warning_level &gt; 0:
+            warn(&#34;EstimationMode specifies fewer than 16 quadrature points, which can cause inaccurate Pc estimates&#34;)
+    
+    
+    
+    # Save the input parameters into the output structure
+    out = {}
+    out[&#34;r1&#34;] = r1
+    out[&#34;v1&#34;] = v1
+    out[&#34;C1&#34;] = C1
+    out[&#34;r2&#34;] = r2
+    out[&#34;v2&#34;] = v2
+    out[&#34;C2&#34;] = C2
+    out[&#34;hbr&#34;] = hbr
+    
+    # Combine the covariances
+    comb_cov = C1 + C2
+    
+    # Relative position and velocity
+    r = r1 - r2
+    v = v1 - v2
+    
+    # Check and adjust for zero miss distance (for processing Alfano
+    # 2009 test cases)
+    rmag = np.linalg.norm(r)
+    reps = max(10 * np.spacing(rmag), 1.0e-6*hbr)
+    if rmag &lt; reps:
+        rsum = r1 + r2
+        rsum_mag = np.linalg.norm(rsum)
+        vmag = np.linalg.norm(v)
+        rdel = reps * np.cross(rsum,v) / rsum_mag / vmag
+        r = r + rdel
+    
+    # Check for zero relative velocity (for processing Alfano 2009 test
+    # cases)
+    vmag = np.linalg.norm(v)
+    if vmag == 0:
+        # TODO display warning for zero rel vel and set Pc to NaN
+        dummy = 1
+    
+    # Orbit normal
+    h = np.cross(r,v)
+    
+    # Construct the relative encounter frame
+    y = v / np.linalg.norm(v)
+    z = h / np.linalg.norm(h)
+    x = np.cross(y, z)
+    eci2xyz = np.stack((x, y, z), axis = 1)
+    out[&#34;xhat&#34;] = x
+    out[&#34;yhat&#34;] = y
+    out[&#34;zhat&#34;] = z</code></pre>
+</details>
+<div class="desc"><p>Computes Pc for state/cov input by integrating over a circle on
+the conjunction plane.</p>
+<p>TODO: Need to fill in with details once implemented</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>r1</code></strong> :&ensp;<code>VectorType</code></dt>
+<dd>Primary object's position vector in inertial cartesian
+coordinates, size is 1x3.</dd>
+<dt><strong><code>v1</code></strong> :&ensp;<code>VectorType</code></dt>
+<dd>Primary object's velocity vector in inertial cartesian
+coordinates, size is 1x3.</dd>
+<dt><strong><code>C1</code></strong> :&ensp;<code>MatrixType</code></dt>
+<dd>Primary object's covariance matrix in the same inertial
+cartesian coordinate frame as the position and velocity, size is
+3x3, 6x6, or nxn with n &gt; 6.</dd>
+<dt><strong><code>r2</code></strong> :&ensp;<code>VectorType</code></dt>
+<dd>Secondary object's position vector in inertial cartesian
+coordinates, size is 1x3.</dd>
+<dt><strong><code>v2</code></strong> :&ensp;<code>VectorType</code></dt>
+<dd>Secondary object's velocity vector in inertial cartesian
+coordinates, size is 1x3.</dd>
+<dt><strong><code>C2</code></strong> :&ensp;<code>MatrixType</code></dt>
+<dd>Secondary object's covariance matrix in the same inertial
+cartesian coordinate frame as the position and velocity, size is
+3x3, 6x6, or nxn with n &gt; 6.</dd>
+<dt><strong><code>hbr</code></strong> :&ensp;<code>float</code></dt>
+<dd>Coimbined hard body radius of the primary and secondary objects.</dd>
+<dt><strong><code>params</code></strong> :&ensp;<code>dict</code>, optional</dt>
+<dd>TODO Fill this section out if needed
+<em>description</em>, by default {}</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>tuple[float, dict]</code></dt>
+<dd>Pc - Computed probability of collision
+out - Dictionary containing the following supplemental
+information:
+IsPosDef - Flag indicating if the combined and marginalized
+covariance has a negative eigenvalue.
+IsRemediated - Flag indicating if the combined and
+marginalized 2x2 covariance was remediated,
+either successfully or not.
+Amat - Combined covariance projected onto the nominal
+conjunction plane.
+xm, zm - Position of the mean relative miss distance on the
+conjunction plane.
+sx, sz - Sigma values of the relative miss distance PDF on the
+conjunction plane.
+r1,v1,C1,r2,v2,C2,hbr - Input parameters saved off for use in
+other functions.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>Occurs when invalid covariance matrix or vectors are passed in.</dd>
+</dl>
+<h2 id="references">References</h2>
+<p>Alfano, S. "A Numerical Implementation of Spherical Object Collision
+Probability." Journal of the Astronautical Sciences, Vol. 53, No. 1,
+pp. 103-109, Jan-Mar 2005.</p></div>
+</dd>
+</dl>
 </section>
 <section>
 </section>
@@ -55,6 +286,11 @@ el.replaceWith(d);
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="cara_analysis_tools.pc" href="index.html">cara_analysis_tools.pc</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="cara_analysis_tools.pc.pc_circle.pc_circle" href="#cara_analysis_tools.pc.pc_circle.pc_circle">pc_circle</a></code></li>
 </ul>
 </li>
 </ul>
