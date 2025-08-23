@@ -60,6 +60,44 @@ def product3x3(a: MatrixType, b: MatrixType) -> MatrixType:
     
     return out
 
+def check_and_resize_nx3(a: MatrixType) -> MatrixType:
+    """Resizes the input array into a 2D nx3 array.
+
+    Parameters
+    ----------
+    a : MatrixType
+        1D or 2D numpy array. If a 1D array, it must be of size 3. If a
+        2D array, must be of size nx3.
+
+    Returns
+    -------
+    MatrixType
+        A 2D numpy array of size nx3.
+    
+    Raises
+    ------
+    ValueError
+        Occurs when the input matrices are not numpy arrays or are of
+        incorrect sizes.
+    """
+    
+    # Check the data type
+    if not isinstance(a, np.ndarray):
+        raise ValueError("Input array must be numpy array")
+    
+    a_size = np.shape(a)
+    if len(a_size) == 1:
+        if a_size[0] != 3:
+            raise ValueError("Array must have a size of 3 or nx3")
+        a = a.reshape(1,3)
+        a_size = np.shape(a)
+    if len(a_size) != 2:
+        raise ValueError("Array must have a size of 3 or nx3")
+    if a_size[1] != 3:
+        raise ValueError("Array must have a size of 3 or nx3")
+    
+    return a
+
 def check_and_resize_posvel(r: MatrixType, v: MatrixType) -> \
                             Tuple[int, MatrixType, MatrixType]:
     """Checks the input vectors as valid representations of position and
@@ -120,48 +158,5 @@ def check_and_resize_posvel(r: MatrixType, v: MatrixType) -> \
     
     return num_r, r, v
 
-def check_and_resize_nx3(a: MatrixType) -> MatrixType:
-    """Resizes the input array into a 2D nx3 array.
+# TODO: Need to implement check_and_resize_cov
 
-    Parameters
-    ----------
-    a : MatrixType
-        1D or 2D numpy array. If a 1D array, it must be of size 3. If a
-        2D array, must be of size nx3.
-
-    Returns
-    -------
-    MatrixType
-        A 2D numpy array of size nx3.
-    
-    Raises
-    ------
-    ValueError
-        Occurs when the input matrices are not numpy arrays or are of
-        incorrect sizes.
-    """
-    
-    # Check the data type
-    if not isinstance(a, np.ndarray):
-        raise ValueError("Input array must be numpy array")
-    
-    a_size = np.shape(a)
-    if len(a_size) == 1:
-        if a_size[0] != 3:
-            raise ValueError("Array must have a size of 3 or nx3")
-        a = a.reshape(1,3)
-        a_size = np.shape(a)
-    if len(a_size) != 2:
-        raise ValueError("Array must have a size of 3 or nx3")
-    if a_size[1] != 3:
-        raise ValueError("Array must have a size of 3 or nx3")
-    
-    return a
-
-if __name__ == "__main__":
-    r = np.array([[1, 2, 3],[4, 5, 6],[7, 8, 9]])
-    v = np.array([4, 5, 6])
-    (num_r, r, v) = check_and_resize_posvel(r, v)
-    print("num_r = " + str(num_r))
-    print("r = " + str(r))
-    print("v = " + str(v))
