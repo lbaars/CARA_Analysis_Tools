@@ -131,7 +131,6 @@ def test_check_and_resize_posvel_not_np_array():
     badArray = "asdf"
     goodArray = np.array([1, 2, 3])
     
-    # Test failures
     with pytest.raises(ValueError):
         pcu.check_and_resize_posvel(badArray, goodArray)
     with pytest.raises(ValueError):
@@ -189,4 +188,137 @@ def test_check_and_resize_posvel_resize():
     npt.assert_equal(numRows, 3)
     npt.assert_equal(r_out, r_3rows)
     npt.assert_equal(v_out, v_3rows)
+
+def test_check_and_resize_cov_not_np_array():
+    badArray = "asdf"
+    
+    with pytest.raises(ValueError):
+        pcu.check_and_resize_cov(1, badArray)
+
+def test_check_and_resize_cov_1d_array_wrong_size():
+    badArray = np.array([1, 2, 3])
+    
+    with pytest.raises(ValueError):
+        pcu.check_and_resize_cov(1, badArray)
+
+def test_check_and_resize_cov_2d_array_wrong_size():
+    badArray = np.array([[1, 2], [2, 3]])
+    
+    with pytest.raises(ValueError):
+        pcu.check_and_resize_cov(1, badArray)
+
+def test_check_and_resize_cov_2d_array_and_n_size_mismatch():
+    badArray = np.array([[1, 2, 3, 4, 5, 6, 7, 8, 9],
+                         [2, 3, 4, 5, 6, 7, 8, 9, 0]])
+    
+    with pytest.raises(ValueError):
+        pcu.check_and_resize_cov(1, badArray)
+
+def test_check_and_resize_cov_3d_array_and_n_size_mismatch():
+    badArray = np.array([[[1, 2, 3],
+                          [2, 3, 4],
+                          [3, 4, 5]],
+                         [[2, 3, 4],
+                          [3, 4, 5],
+                          [5, 6, 7]]])
+    badArray2 = np.array([[[1, 2],
+                           [2, 3]],
+                          [[3, 4],
+                           [4, 5]]])
+    
+    with pytest.raises(ValueError):
+        pcu.check_and_resize_cov(1, badArray)
+    with pytest.raises(ValueError):
+        pcu.check_and_resize_cov(2, badArray2)
+
+def test_check_and_resize_cov_4d_array():
+    badArray = np.array([[[[1, 2, 3, 4, 5, 6, 7, 8, 9]]]])
+    
+    with pytest.raises(ValueError):
+        pcu.check_and_resize_cov(1, badArray)
+
+def test_check_and_resize_cov_reshape_1d_array():
+    inArray = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+    expArray = np.array([[1, 2, 3, 4, 5, 6, 7, 8, 9]])
+    
+    actArray = pcu.check_and_resize_cov(1, inArray)
+    npt.assert_equal(actArray, expArray)
+
+def test_check_and_resize_cov_reshape_3x3():
+    inArray = np.array([[1, 2, 3],
+                        [2, 3, 4],
+                        [3, 4, 5]])
+    expArray = np.array([[1, 2, 3, 2, 3, 4, 3, 4, 5]])
+    
+    actArray = pcu.check_and_resize_cov(1, inArray)
+    npt.assert_equal(actArray, expArray)
+
+def test_check_and_resize_cov_reshape_6x6():
+    inArray = np.array([[1, 2, 3, 4, 5, 6],
+                        [2, 3, 4, 5, 6, 7],
+                        [3, 4, 5, 6, 7, 8],
+                        [4, 5, 6, 7, 8, 9],
+                        [5, 6, 7, 8, 9, 0],
+                        [6, 7, 8, 9, 0, 1]])
+    expArray = np.array([[1, 2, 3, 2, 3, 4, 3, 4, 5]])
+    
+    actArray = pcu.check_and_resize_cov(1, inArray)
+    npt.assert_equal(actArray, expArray)
+
+def test_check_and_resize_cov_resize_1x9_to_nx9():
+    inArray = np.array([[1, 2, 3, 4, 5, 6, 7, 8, 9]])
+    n = 3
+    expArray = np.array([[1, 2, 3, 4, 5, 6, 7, 8, 9],
+                         [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                         [1, 2, 3, 4, 5, 6, 7, 8, 9]])
+    
+    actArray = pcu.check_and_resize_cov(n, inArray)
+    npt.assert_equal(actArray, expArray)
+
+def test_check_and_resize_cov_resize_3x3_to_nx9():
+    inArray = np.array([[1, 2, 3],
+                        [2, 3, 4],
+                        [3, 4, 5]])
+    n = 3
+    expArray = np.array([[1, 2, 3, 2, 3, 4, 3, 4, 5],
+                         [1, 2, 3, 2, 3, 4, 3, 4, 5],
+                         [1, 2, 3, 2, 3, 4, 3, 4, 5]])
+    
+    actArray = pcu.check_and_resize_cov(n, inArray)
+    npt.assert_equal(actArray, expArray)
+
+def test_check_and_resize_cov_resize_6x6_to_nx9():
+    inArray = np.array([[1, 2, 3, 4, 5, 6],
+                        [2, 3, 4, 5, 6, 7],
+                        [3, 4, 5, 6, 7, 8],
+                        [4, 5, 6, 7, 8, 9],
+                        [5, 6, 7, 8, 9, 0],
+                        [6, 7, 8, 9, 0, 1]])
+    n = 3
+    expArray = np.array([[1, 2, 3, 2, 3, 4, 3, 4, 5],
+                         [1, 2, 3, 2, 3, 4, 3, 4, 5],
+                         [1, 2, 3, 2, 3, 4, 3, 4, 5]])
+    
+    actArray = pcu.check_and_resize_cov(n, inArray)
+    npt.assert_equal(actArray, expArray)
+
+def test_check_and_reszie_cov_resize_3d_to_nx9():
+    inArray = np.array([[[1, 2, 3, 4, 5, 6],
+                         [2, 3, 4, 5, 6, 7],
+                         [3, 4, 5, 6, 7, 8],
+                         [4, 5, 6, 7, 8, 9],
+                         [5, 6, 7, 8, 9, 0],
+                         [6, 7, 8, 9, 0, 1]],
+                        [[2, 3, 4, 5, 6, 7],
+                         [3, 4, 5, 6, 7, 8],
+                         [4, 5, 6, 7, 8, 9],
+                         [5, 6, 7, 8, 9, 0],
+                         [6, 7, 8, 9, 0, 1],
+                         [7, 9, 9, 0, 1, 2]]])
+    n = 2
+    expArray = np.array([[1, 2, 3, 2, 3, 4, 3, 4, 5],
+                         [2, 3, 4, 3, 4, 5, 4, 5, 6]])
+    
+    actArray = pcu.check_and_resize_cov(n, inArray)
+    npt.assert_equal(actArray, expArray)
 

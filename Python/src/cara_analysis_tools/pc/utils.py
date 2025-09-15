@@ -158,5 +158,103 @@ def check_and_resize_posvel(r: MatrixType, v: MatrixType) -> \
     
     return num_r, r, v
 
-# TODO: Need to implement check_and_resize_cov
+def check_and_resize_cov(num_r: int, cov: MatrixType) -> MatrixType:
+    """Resizes the covariance matrices passed in into an nx9 matrix to
+    be used in vectorized covariance processing.
+    
+    Reformats the input covariance matrices into an nx9 matrix
+    representing the 3x3 position covariance with each row in the
+    following format:
+      cov = [C(0,0) C(0,1) C(0,2) C(1,0) C(1,1) C(1,2) C(2,0), C(2,1), C(2,2)]
+    The "n" is equal to the num_r passed in.
+    
+    Depending on the input format, this function will respond in several
+    different ways to reformat the cov matrix:
+    - If the input is an nx9, then this function verifies that n matches
+      num_r.
+    - If the input is a 3x3, then this function will reformat the matrix
+      into a 1x9 and then repeat this vector num_r times to create n
+      rows.
+    - If the input is a 6x6, then this function will take the upper left
+      3x3 component and reformat it into a 1x9. The it will repeat this
+      vector num_r times to create n rows.
+    - If the input is a nx3x3, then this function will verify that n
+      matches num_r and will reformat each 3x3 into a corresponding 1x9.
+    - If the input is a nx6x6, then this function will verify that n
+      matches num_r and will convert the upper left 3x3 of each 6x6 into
+      a corresponding 1x9.
+    - Any other input is considered an error.
+    
+    Parameters
+    ----------
+    num_r : int
+        Number of rows, n, to create
+    cov : MatrixType
+        Covariance matrix to convert into an nx9. Allowed inputs
+        are:
+          1D numpy array with 9 elements
+          2D numpy array of size 1x9 or nx9
+          2D numpy array of size 3x3
+          2D numpy array of size 6x6
+          3D numpy array of size nx3x3
+          3D numpy array of size nx6x6
 
+    Returns
+    -------
+    MatrixType
+        cov - Covariance matrix converted into nx9 format.
+    
+    Raises
+    ------
+    ValueError
+        Occurs when the input matrix has an incorrect format and cannot
+        be resized.
+    """
+    
+    # Check the data type
+    if not isinstance(cov, np.ndarray):
+        raise ValueError("cov argument must be numpy array")
+    
+    cov_size = np.shape(cov)
+    # If a 1D array, verify size and convert into 2D array
+    if len(cov_size) == 1:
+        if cov_size[0] != 9:
+            raise ValueError("1D cov array must have a size of 9")
+        cov = cov.reshape(1,9)
+        cov_size = np.shape(cov)
+    
+    # Resize a 2D array
+    if len(cov_size) == 2:
+        if cov_size[1] != 9 and \
+            (cov_size[0] != 3 or cov_size[1] != 3) and \
+            (cov_size[0] != 6 or cov_size[1] != 6):
+            raise ValueError("2D cov array must have 9 columns or " + \
+                "be a 3x3 or 6x6 matrix")
+        # Resize down to a 3x3 if a 6x6 was passed in
+        if cov_size[0] == 6 and cov_size[1] == 6:
+            cov = cov[0:3,0:3]
+            cov_size = np.shape(cov)
+        
+        # Convert 1x9 into nx9
+        if cov_size[0] == 1:
+            cov = np.tile(cov, (num_r, 1))
+        elif cov_size[0] == 3 and cov_size[1] == 3:
+            cov = cov.reshape(1, 9)
+            cov = np.tile(cov, (num_r, 1))
+        elif cov_size[0] != num_r:
+            raise ValueError("2D cov array cannot be resized to " + \
+                "match num_r rows")
+    # Resize a 3D array
+    elif len(cov_size) == 3:
+        if (cov_size[0] != num_r or cov_size[1] != 3 or cov_size[2] != 3) and \
+           (cov_size[0] != num_r or cov_size[1] != 6 or cov_size[2] != 6):
+            raise ValueError("3D cov array must be of size num_rx3x3 " + \
+                "or num_rx6x6")
+        # Resize down to num_rx3x3 if num_rx6x6 was passed in
+        if cov_size[1] == 6 and cov_size[2] == 6:
+            cov = cov[:,0:3,0:3]
+        cov = cov.reshape(num_r, 9)
+    else:
+        raise ValueError("Improperly size cov array was detected")
+    
+    return cov
