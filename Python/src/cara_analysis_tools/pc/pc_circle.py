@@ -6,13 +6,12 @@ from warnings import warn
 from cara_analysis_tools.utils.datatypes import (
     MatrixType,
     VectorType,
-    valid_cov_matrix,
-    valid_vector,
     )
+import cara_analysis_tools.pc.utils as pcu
 
-def pc_circle(r1: VectorType, v1: VectorType, C1: MatrixType,
-              r2: VectorType, v2: VectorType, C2: MatrixType,
-              hbr: float, params: dict = {}) -> tuple[float, dict]:
+def pc_circle(r1: VectorType, v1: VectorType, cov1: MatrixType,
+              r2: VectorType, v2: VectorType, cov2: MatrixType,
+              hbr: float | VectorType, params: dict = {}) -> tuple[float, dict]:
     """Computes Pc for state/cov input by integrating over a circle on
     the conjunction plane.
     
@@ -26,7 +25,7 @@ def pc_circle(r1: VectorType, v1: VectorType, C1: MatrixType,
     v1 : VectorType
         Primary object's velocity vector in inertial cartesian
         coordinates, size is 1x3.
-    C1 : MatrixType
+    cov1 : MatrixType
         Primary object's covariance matrix in the same inertial
         cartesian coordinate frame as the position and velocity, size is
         3x3, 6x6, or nxn with n > 6.
@@ -36,7 +35,7 @@ def pc_circle(r1: VectorType, v1: VectorType, C1: MatrixType,
     v2 : VectorType
         Secondary object's velocity vector in inertial cartesian
         coordinates, size is 1x3.
-    C2 : MatrixType
+    cov2 : MatrixType
         Secondary object's covariance matrix in the same inertial
         cartesian coordinate frame as the position and velocity, size is
         3x3, 6x6, or nxn with n > 6.
@@ -78,26 +77,6 @@ def pc_circle(r1: VectorType, v1: VectorType, C1: MatrixType,
     pp. 103-109, Jan-Mar 2005.
     """
     
-    # Check for valid vectors and matrices
-    if not valid_vector(r1):
-        raise ValueError("r1 vector must be 1x3 NDarray")
-    if not valid_vector(v1):
-        raise ValueError("v1 vector must be 1x3 NDarray")
-    if not valid_cov_matrix(C1):
-        raise ValueError("C1 matrix must be 3x3, 6x6, or nxn (n>6)"
-                         + " symmetric NDarray")
-    if not valid_vector(r2):
-        raise ValueError("r2 vector must be 1x3 NDarray")
-    if not valid_vector(v2):
-        raise ValueError("v2 vector must be 1x3 NDarray")
-    if not valid_cov_matrix(C2):
-        raise ValueError("C2 matrix must be 3x3, 6x6, or nxn (n>6)"
-                         + " symmetric NDarray")
-    c1_size = np.size(C1)
-    c2_size = np.size(C2)
-    if c1_size != c2_size:
-        raise ValueError("C1 and C2 matrices must be the same size")
-    
     # Set defaults within params structure
     if "EstimationMode" not in params:
         params["EstimationMode"] = 64
@@ -107,6 +86,8 @@ def pc_circle(r1: VectorType, v1: VectorType, C1: MatrixType,
         params["WarningLevel"] = 0
     warning_level = params["WarningLevel"]
     
+    # Enables plotting of primary and secondary ellipses on CA
+    # distribution plots
     if "PriSecCovProcessing" not in params:
         params["PriSecCovProcessing"] = False
     
@@ -120,20 +101,54 @@ def pc_circle(r1: VectorType, v1: VectorType, C1: MatrixType,
         elif estimation_mode < 16 and warning_level > 0:
             warn("EstimationMode specifies fewer than 16 quadrature points, which can cause inaccurate Pc estimates")
     
+    # Reformat the inputs to expected dimensions
+    #  (nx3 for pos and vel; nx9 for covariances, nx1 for HBRs)
+    (n_vec,  r1, v1) = pcu.check_and_resize_posvel(r1, v1)
+    (n_vec2, r2, v2) = pcu.check_and_resize_posvel(r2, v2)
+    if (n_vec != n_vec2):
+        raise ValueError("Number of primary and secondary postions must be equal")
+    cov1 = pcu.check_and_resize_cov(n_vec,  cov1)
+    cov2 = pcu.check_and_resize_cov(n_vec2, cov2)
     
+    # Replicate scalar HBR into an nx1 array
+    if isinstance(hbr, float):
+        hbr = np.tile(hbr, (n_vec, 1))
+    elif isinstance(hbr, np.ndarray):
+        hbr_size = np.shape(hbr)
+        if len(hbr_size) == 1:
+            if hbr_size[0] == 1:
+                hbr = np.tile(hbr[0], (n_vec, 1))
+            elif hbr_size[0] == n_vec:
+                hbr = np.array([hbr])
+            else:
+                raise ValueError("Size of hbr array must be 1x1 or nx1")
+        elif len(hbr_size) == 2:
+            if (hbr_size[0] != 1 or hbr_size[1] != 1) and \
+                (hbr_size[0] != n_vec or hbr_size[1] != 1):
+                    raise ValueError("Size of hbr array must be 1x1 or nx1")
+        else:
+            raise ValueError("Size of hbr array must be 1x1 or nx1")
+    else:
+        raise ValueError("hbr parameter must be a float or numpy array")
     
+    # Ensure HBR values are nonnegative
+    if (hbr < 0).any():
+        if warning_level > 0:
+            warn("Negative HBR values found and replaced with zeros")
+        hbr[hbr < 0] = 0
+
     # Save the input parameters into the output structure
     out = {}
     out["r1"] = r1
     out["v1"] = v1
-    out["C1"] = C1
+    out["cov1"] = cov1
     out["r2"] = r2
     out["v2"] = v2
-    out["C2"] = C2
+    out["cov2"] = cov2
     out["hbr"] = hbr
     
     # Combine the covariances
-    comb_cov = C1 + C2
+    comb_cov = cov1 + cov2
     
     # Relative position and velocity
     r = r1 - r2
@@ -141,20 +156,25 @@ def pc_circle(r1: VectorType, v1: VectorType, C1: MatrixType,
     
     # Check and adjust for zero miss distance (for processing Alfano
     # 2009 test cases)
-    rmag = np.linalg.norm(r)
-    reps = max(10 * np.spacing(rmag), 1.0e-6*hbr)
-    if rmag < reps:
-        rsum = r1 + r2
-        rsum_mag = np.linalg.norm(rsum)
-        vmag = np.linalg.norm(v)
-        rdel = reps * np.cross(rsum,v) / rsum_mag / vmag
-        r = r + rdel
+    rmag = np.sqrt(r[:,0]**2 + r[:,1]**2 + r[:,2]**2)
+    reps = np.maximum(10.0 * np.spacing(rmag), (1.0e-6 * hbr).flatten())
+    small_rmag = (rmag < reps)
+    if np.sum(small_rmag) > 0:
+        if warning_level > 0:
+            warn("Zero or near-zero miss distance cases found; perturbing miss distance for those cases")
+        rsum = r1[small_rmag,:] + r2[small_rmag,:]
+        rsum_mag = np.sqrt(rsum[:,0]**2 + rsum[:,1]**2 + rsum[:,2]**2)
+        vmag = np.sqrt(v[small_rmag,0]**2 + v[small_rmag,1]**2 + v[small_rmag,2]**2)
+        reps2 = reps[small_rmag].reshape(-1, 1)
+        cross_prod = np.cross(rsum,v[small_rmag,:])
+        rdel = reps2 * cross_prod / rsum_mag.reshape(-1, 1) / vmag.reshape(-1, 1)
+        r[small_rmag,:] = r[small_rmag,:] + rdel
     
     # Check for zero relative velocity (for processing Alfano 2009 test
     # cases)
+    #TODO: continue implementation from here
     vmag = np.linalg.norm(v)
     if vmag == 0:
-        # TODO display warning for zero rel vel and set Pc to NaN
         dummy = 1
     
     # Orbit normal
@@ -172,10 +192,22 @@ def pc_circle(r1: VectorType, v1: VectorType, C1: MatrixType,
 if __name__ == "__main__":
     expPc = 1.807363058494765e-01
             
-    r1 = np.array([-3239.128337196251,   2404.575152356222,   5703.228541709001])
-    v1 = np.array([-3.745768373154199,   5.012339015927846,  -4.231864565717194])
-    r2 = np.array([-3239.138264917246,   2404.568320465936,   5703.235605231182])
-    v2 = np.array([ 6.110192790100711,  -1.767321407894830,   4.140369261741708])
+    r1 = np.array([[-3239.128337196251,   2404.575152356222,   5703.228541709001],
+                   [-3239.128337196251,   2404.575152356222,   5703.228541709001],
+                   [-3239.128337196251,   2404.575152356222,   5703.228541709001],
+                   [-3239.128337196251,   2404.575152356222,   5703.228541709001]])
+    v1 = np.array([[-3.745768373154199,   5.012339015927846,  -4.231864565717194],
+                   [-3.745768373154199,   5.012339015927846,  -4.231864565717194],
+                   [-3.745768373154199,   5.012339015927846,  -4.231864565717194],
+                   [-3.745768373154199,   5.012339015927846,  -4.231864565717194]])
+    r2 = np.array([[-3239.138264917246,   2404.568320465936,   5703.235605231182],
+                   [-3239.128337196251,   2404.575152356222,   5703.228541709001],
+                   [-3239.138264917246,   2404.568320465936,   5703.235605231182],
+                   [-3239.128337196251,   2404.575152356222,   5703.228541709001]])
+    v2 = np.array([[ 6.110192790100711,  -1.767321407894830,   4.140369261741708],
+                   [ 6.110192790100711,  -1.767321407894830,   4.140369261741708],
+                   [ 6.110192790100711,  -1.767321407894830,   4.140369261741708],
+                   [ 6.110192790100711,  -1.767321407894830,   4.140369261741708],])
     cov1 = np.array([[ 0.342072996423899, -0.412677096778269,  0.371500417511149],
                      [-0.412677096778269,  0.609905946319294, -0.540401385544286],
                      [ 0.371500417511149, -0.540401385544286,  0.521238634755377]])*1e-3
