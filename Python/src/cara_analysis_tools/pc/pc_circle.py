@@ -172,22 +172,33 @@ def pc_circle(r1: VectorType, v1: VectorType, cov1: MatrixType,
     
     # Check for zero relative velocity (for processing Alfano 2009 test
     # cases)
-    #TODO: continue implementation from here
-    vmag = np.linalg.norm(v)
-    if vmag == 0:
-        dummy = 1
+    vmag = np.sqrt(v[:,0]**2 + v[:,1]**2 + v[:,2]**2).reshape(-1, 1)
+    zero_vmag = (vmag == 0)
+    if np.sum(zero_vmag) > 0 and warning_level > 0:
+        warn("Zero relative velocity cases found; setting Pc to NaN for those cases")
     
     # Orbit normal
     h = np.cross(r,v)
     
     # Construct the relative encounter frame
-    y = v / np.linalg.norm(v)
-    z = h / np.linalg.norm(h)
+    y = v / np.sqrt(v[:,0]**2 + v[:,1]**2 + v[:,2]**2).reshape(-1, 1)
+    z = h / np.sqrt(h[:,0]**2 + h[:,1]**2 + h[:,2]**2).reshape(-1, 1)
     x = np.cross(y, z)
-    eci2xyz = np.stack((x, y, z), axis = 1)
+    eci2xyz = np.concatenate((x, y, z), axis = 1)
     out["xhat"] = x
     out["yhat"] = y
     out["zhat"] = z
+    
+    # Pri and Sec cov processing
+    if params["PriSecCovProcessing"]:
+        # Project combined covariances into conjunction planes
+        rotated_cov = pcu.product3x3(eci2xyz,pcu.product3x3(cov1[:,0:9],eci2xyz[:,[0, 3, 6, 1, 4, 7, 2, 5, 8]]))
+        a_mat = rotated_cov[:, [0, 2, 8]]
+        out["AmatPri"] = a_mat
+        if np.max(np.abs(a_mat.flatten())) == 0:
+            warn("All zero primary covariance being processed")
+        print(a_mat)
+        # TODO: Need to implement eig2x2
 
 if __name__ == "__main__":
     expPc = 1.807363058494765e-01
@@ -215,4 +226,6 @@ if __name__ == "__main__":
                      [-0.008204103437377,  0.002404377774847, -0.005586512197914],
                      [ 0.019253747960155, -0.005586512197914,  0.013289250260317]])
     HBR = 0.020
-    pc_circle(r1,v1,cov1,r2,v2,cov2,HBR)
+    params = dict()
+    params["PriSecCovProcessing"] = True
+    pc_circle(r1,v1,cov1,r2,v2,cov2,HBR,params)
