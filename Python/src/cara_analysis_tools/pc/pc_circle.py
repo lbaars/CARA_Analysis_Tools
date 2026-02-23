@@ -8,6 +8,7 @@ from cara_analysis_tools.utils.datatypes import (
     VectorType,
     )
 import cara_analysis_tools.pc.utils as pcu
+from cara_analysis_tools.pc.utils import PcCalculationError
 
 def pc_circle(r1: VectorType, v1: VectorType, cov1: MatrixType,
               r2: VectorType, v2: VectorType, cov2: MatrixType,
@@ -69,6 +70,10 @@ def pc_circle(r1: VectorType, v1: VectorType, cov1: MatrixType,
     ------
     ValueError
         Occurs when invalid covariance matrix or vectors are passed in.
+    
+    PcCalculationError
+        Occurs when two non-positive eigenvalues are found in the combined
+        covariance matrix.
     
     References
     ----------
@@ -191,14 +196,58 @@ def pc_circle(r1: VectorType, v1: VectorType, cov1: MatrixType,
     
     # Pri and Sec cov processing
     if params["PriSecCovProcessing"]:
-        # Project combined covariances into conjunction planes
+        # Project primary covariances into conjunction plane
         rotated_cov = pcu.product3x3(eci2xyz,pcu.product3x3(cov1[:,0:9],eci2xyz[:,[0, 3, 6, 1, 4, 7, 2, 5, 8]]))
         a_mat = rotated_cov[:, [0, 2, 8]]
         out["AmatPri"] = a_mat
         if np.max(np.abs(a_mat.flatten())) == 0:
             warn("All zero primary covariance being processed")
-        print(a_mat)
-        # TODO: Need to implement eig2x2
+        
+        # Calculate eigenvalues and eigenvectors for primary and save off
+        # values
+        (V1, V2, L1, L2) = pcu.eig2x2(a_mat)
+        out["EigV1Pri"] = V1
+        out["EigV2Pri"] = V2
+        out["EigL1Pri"] = L1
+        out["EigL2Pri"] = L2
+        
+        # Project secondary coavariance into conjunction plane
+        rotated_cov = pcu.product3x3(eci2xyz,pcu.product3x3(cov2[:,0:9],eci2xyz[:,[0, 3, 6, 1, 4, 7, 2, 5, 8]]))
+        a_mat = rotated_cov[:, [0, 2, 8]]
+        out["AmatSec"] = a_mat
+        if np.max(np.abs(a_mat.flatten())) == 0:
+            warn("All zero secondary covariance being processed")
+        
+        # Calculate eigenvalues and eigenvectors for secondary and save off
+        # values
+        (V1, V2, L1, L2) = pcu.eig2x2(a_mat)
+        out["EigV1Sec"] = V1
+        out["EigV2Sec"] = V2
+        out["EigL1Sec"] = L1
+        out["EigL2Sec"] = L2
+    
+    # Project the combined covariance into the conjunction plane
+    rotated_cov = pcu.product3x3(eci2xyz,pcu.product3x3(comb_cov[:,0:9],eci2xyz[:,[0, 3, 6, 1, 4, 7, 2, 5, 8]]))
+    a_mat = rotated_cov[:, [0, 2, 8]]
+    out["Amat"] = a_mat
+    
+    # Calculate eigenvalues and eigenvectors for the combined covariance, the
+    # 2nd eigenvector isn't needed for the rest of the calculation
+    (V1, V2, L1, L2) = pcu.eig2x2(a_mat)
+    out["EigV1"] = V1
+    out["EigV2"] = V2
+    out["EigL1"] = L1
+    out["EigL2"] = L2
+    
+    # Issue error if any cases are found with two non-positive eigenvalues
+    if (L1 <= 0).any():
+        raise PcCalculationError("Invalid case(s) found with two non-positive eigenvalues")
+    
+    # Issue a warning for any NPD cases
+    if warning_level > 0 and (L2 <= 0).any():
+        warn("NPD covariance(s) found; remediating using eigenvalue clipping method")
+    
+    # TODO: Need to implement eigenvalue clipping
 
 if __name__ == "__main__":
     expPc = 1.807363058494765e-01

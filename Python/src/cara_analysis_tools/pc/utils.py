@@ -3,7 +3,101 @@
 
 import numpy as np
 from typing import Tuple
-from cara_analysis_tools.utils.datatypes import MatrixType
+from cara_analysis_tools.utils.datatypes import MatrixType, VectorType
+
+class PcCalculationError(Exception):
+    """Custom exception raised when Pc calculation errors are encountered."""
+    pass
+
+def eig2x2(Araw: MatrixType) -> \
+        tuple[MatrixType, MatrixType, VectorType, VectorType]:
+    """Vectorized eigenvalue and eigenvector solver for 2x2 symmetric matrices
+    
+    Parameters
+    ----------
+    Araw : MatrixType
+        Array of shape (n, 3) where each row is [a, b, d] representing a
+        symmetric matrix:
+            [ a  b ]
+            [ b  d ]
+    
+    Returns
+    -------
+    tuple[MatrixType, MatrixType, VectorType, VectorType]
+        V1 - Array (n,2), first eigenvector of each matrix
+        V2 - Array (n,2), second eigenvector of each matrix
+        L1 - Array (n,), largest eigenvalue
+        L2 - Array (n,), smallest eigenvalue
+    """
+
+    # split components
+    a = Araw[:, 0]
+    b = Araw[:, 1]
+    d = Araw[:, 2]
+
+    # trace and determinant
+    T = a + d
+    D = a * d - b * b
+
+    # eigenvalues (quadratic closed form)
+    sqrt_term = np.sqrt(np.clip(T * T - 4 * D, 0.0, None))
+    L1 = (T + sqrt_term) / 2.0  # largest
+    L2 = (T - sqrt_term) / 2.0  # smallest
+
+    # prepare output vectors
+    n = Araw.shape[0]
+    V1 = np.full((n, 2), np.nan)
+    V2 = np.full((n, 2), np.nan)
+
+    # indices where off-diagonal b != 0
+    mask = b != 0
+    if np.any(mask):
+        # formula for eigenvectors when b != 0
+        v1 = np.column_stack((L1[mask] - d[mask], b[mask]))
+        v2 = np.column_stack((L2[mask] - d[mask], b[mask]))
+        # normalize
+        V1[mask] = v1 / np.linalg.norm(v1, axis=1)[:, None]
+        V2[mask] = v2 / np.linalg.norm(v2, axis=1)[:, None]
+
+    # handle diagonal case (b == 0)
+    mask0 = ~mask
+    if np.any(mask0):
+        # if d <= a → first eigenvector = [1 0], second = [0 1]
+        diag_le = d[mask0] <= a[mask0]
+        idx_le = np.where(mask0)[0][diag_le]
+        idx_gt = np.where(mask0)[0][~diag_le]
+
+        V1[idx_le] = np.array([1.0, 0.0])
+        V2[idx_le] = np.array([0.0, 1.0])
+
+        V1[idx_gt] = np.array([0.0, 1.0])
+        V2[idx_gt] = np.array([1.0, 0.0])
+
+    # special cases where numerical issues occur
+    # i.e., sqrt term underflow or b small → fall back to full eig
+    small_b = (np.abs(b) < 1e-2) & (b != 0)
+    det_err = (a * d == a * d - b * b) & (b * b != 0)
+    fallback = small_b | det_err
+
+    if np.any(fallback):
+        for i in np.where(fallback)[0]:
+            mat = np.array([[a[i], b[i]],
+                            [b[i], d[i]]])
+            # compute full eig
+            vals, vecs = np.linalg.eig(mat)
+            # sort ascending eigenvalues like Matlab's eig(...,'vector')
+            order = np.argsort(vals)
+            vals_sorted = vals[order]
+            vecs_sorted = vecs[:, order]
+            # assign outputs such that the largest eigenvalue and
+            # associated eigenvector are in L1 and V1 variables,
+            # respectively
+            L2[i] = vals_sorted[0]
+            L1[i] = vals_sorted[1]
+            V2[i] = vecs_sorted[:, 0]
+            V1[i] = vecs_sorted[:, 1]
+
+    return V1, V2, L1, L2
 
 def product3x3(a: MatrixType, b: MatrixType) -> MatrixType:
     """Vectorized 3x3 matrix multiplication routine
