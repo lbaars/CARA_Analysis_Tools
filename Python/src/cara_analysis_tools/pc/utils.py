@@ -41,8 +41,8 @@ def eig2x2(Araw: MatrixType) -> \
 
     # eigenvalues (quadratic closed form)
     sqrt_term = np.sqrt(np.clip(T * T - 4 * D, 0.0, None))
-    L1 = (T + sqrt_term) / 2.0  # largest
-    L2 = (T - sqrt_term) / 2.0  # smallest
+    L1 = ((T + sqrt_term) / 2.0).reshape(-1, 1)  # largest
+    L2 = ((T - sqrt_term) / 2.0).reshape(-1, 1)  # smallest
 
     # prepare output vectors
     n = Araw.shape[0]
@@ -53,8 +53,8 @@ def eig2x2(Araw: MatrixType) -> \
     mask = b != 0
     if np.any(mask):
         # formula for eigenvectors when b != 0
-        v1 = np.column_stack((L1[mask] - d[mask], b[mask]))
-        v2 = np.column_stack((L2[mask] - d[mask], b[mask]))
+        v1 = np.column_stack((L1[mask, 0] - d[mask], b[mask]))
+        v2 = np.column_stack((L2[mask, 0] - d[mask], b[mask]))
         # normalize
         V1[mask] = v1 / np.linalg.norm(v1, axis=1)[:, None]
         V2[mask] = v2 / np.linalg.norm(v2, axis=1)[:, None]
@@ -92,8 +92,8 @@ def eig2x2(Araw: MatrixType) -> \
             # assign outputs such that the largest eigenvalue and
             # associated eigenvector are in L1 and V1 variables,
             # respectively
-            L2[i] = vals_sorted[0]
-            L1[i] = vals_sorted[1]
+            L2[i, 0] = vals_sorted[0]
+            L1[i, 0] = vals_sorted[1]
             V2[i] = vecs_sorted[:, 0]
             V1[i] = vecs_sorted[:, 1]
 

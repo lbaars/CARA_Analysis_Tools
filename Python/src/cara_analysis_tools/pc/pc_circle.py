@@ -247,7 +247,41 @@ def pc_circle(r1: VectorType, v1: VectorType, cov1: MatrixType,
     if warning_level > 0 and (L2 <= 0).any():
         warn("NPD covariance(s) found; remediating using eigenvalue clipping method")
     
-    # TODO: Need to implement eigenvalue clipping
+    # Use eigenvalue clipping method to make the covariances positive
+    # definite. Since this Pc algorithm does not require Cholesky
+    # factorization, the covariance remediation is very simple: clip any
+    # eigenvalues that are less than the clipping limit and then
+    # recreate the remediated covariance using the origianl eigenvectors
+    # and the clipped eigenvalues.
+    a = np.isinf(hbr)
+    finite_hbr = np.logical_not(np.isinf(hbr))
+    f_clip = 1.0e-4
+    l_rem = (f_clip * hbr)**2
+    is_rem1 = np.logical_and(L1 < l_rem, finite_hbr)
+    L1[is_rem1] = l_rem[is_rem1]
+    is_rem2 = np.logical_and(L2 < l_rem, finite_hbr)
+    L2[is_rem2] = l_rem[is_rem2]
+    # L2 is guaranteed to be the smaller of the two eigenvalues, if the
+    # remediated value is greater than 0, then the matrix is positive
+    # definite
+    out["IsPosDef"] = L2 > 0
+    out["IsRemediated"] = np.logical_or(is_rem1, is_rem2)
+    
+    # Sigma values
+    sx = np.sqrt(L1)
+    sz = np.sqrt(L2)
+    out["sx"] = sx
+    out["sz"] = sz
+    
+    # The miss distance coordinates in the conjunction plane (xm,zm)
+    # calculated such that both are nonnegative
+    rm = np.sqrt(r[:,0]**2 + r[:,1]**2 + r[:,2]**2).reshape(-1, 1)
+    xm = rm * np.abs(V1[:,0]).reshape(-1, 1)
+    zm = rm * np.abs(V1[:,1]).reshape(-1, 1)
+    out["xm"] = xm
+    out["zm"] = zm
+    
+    # TODO: Need to start implementing Pc Estimations
 
 if __name__ == "__main__":
     expPc = 1.807363058494765e-01

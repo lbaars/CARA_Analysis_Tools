@@ -13,7 +13,7 @@ def np_eig_sorted(a, b, d):
                   [b, d]])
     vals, vecs = np.linalg.eig(M)
     idx = np.argsort(vals)[::-1]
-    return vals[idx], vecs[:, idx]
+    return vals[idx].reshape(-1, 1), vecs[:, idx]
 
 
 # ------------------------------------------------------------
