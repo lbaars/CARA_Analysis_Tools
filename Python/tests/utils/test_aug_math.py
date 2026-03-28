@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 from scipy.linalg import issymmetric
+from scipy.special import erf, erfc
 import cara_analysis_tools.utils.aug_math as am
 
 def test_cov_make_symmetric_not_np_array():
@@ -48,3 +49,19 @@ def test_cov_make_symmetric_make_symmetric():
     
     assert issymmetric(Csym)
 
+def test_erf_vec_dif():
+    a = np.array([-5.0, -5.0, -5.0, -5.0, -1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 5.0, 5.0, 5.0, 5.0])
+    b = np.array([-5.0, -1.0, 1.0, 5.0, -5.0, -1.0, 1.0, 5.0, -5.0, -1.0, 1.0, 5.0, -5.0, -1.0, 1.0, 5.0])
+    
+    d = am.erf_vec_dif(a, b)
+    
+    large = 3.0
+    for i in range(len(a)):
+        if np.minimum(a[i], b[i]) > large:
+            checkVal = erfc(b[i]) - erfc(a[i])
+        elif np.maximum(a[i], b[i]) < -large:
+            checkVal = erfc(-a[i]) - erfc(-b[i])
+        else:
+            checkVal = erf(a[i]) - erf(b[i])
+        
+        assert d[i] == checkVal

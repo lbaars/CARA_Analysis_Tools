@@ -8,6 +8,7 @@ from cara_analysis_tools.utils.datatypes import (
     VectorType,
     )
 import cara_analysis_tools.pc.utils as pcu
+import cara_analysis_tools.utils.aug_math as am
 from cara_analysis_tools.pc.utils import PcCalculationError
 
 def pc_circle(r1: VectorType, v1: VectorType, cov1: MatrixType,
@@ -281,7 +282,33 @@ def pc_circle(r1: VectorType, v1: VectorType, cov1: MatrixType,
     out["xm"] = xm
     out["zm"] = zm
     
-    # TODO: Need to start implementing Pc Estimations
+    # Estimate the Pc
+    if estimation_mode <= 0:
+        # TODO: Need to add unit tests for each of these modes
+        if estimation_mode == 0:
+            # Mode 0: Calculate the equal-area square Pc approximation,
+            # representing the integral over the square with area equal
+            # to the HBR circle
+            hsq = np.sqrt(np.pi/4.0) * hbr
+        else:
+            # Mode -1: Calculate the circumscribing square Pc upper
+            # bound, representing the integral over the square with area
+            # that is always larger and completely encloses the HBR
+            # circle
+            hsq = hbr
+        
+        # Calculate the analytical solution for the ensquared Pc, which
+        # has an analytical solution involving error functions (Alfano
+        # 2005)
+        sqrt2 = np.sqrt(2.0)
+        dx = sqrt2 * sx
+        dz = sqrt2 * sz
+        Ex = am.erf_vec_dif( (xm+hsq)/dx, (xm-hsq)/dx)
+        Ez = am.erf_vec_dif( (zm+hsq)/dz, (zm-hsq)/dz)
+        Pc = Ex * Ez / 4.0
+        print("Pc = " + str(Pc))
+        
+    # TODO: Need to implement estimation modes > 0
 
 if __name__ == "__main__":
     expPc = 1.807363058494765e-01
@@ -310,5 +337,6 @@ if __name__ == "__main__":
                      [ 0.019253747960155, -0.005586512197914,  0.013289250260317]])
     HBR = 0.020
     params = dict()
-    params["PriSecCovProcessing"] = True
+    #params["PriSecCovProcessing"] = True
+    params["EstimationMode"] = -1
     pc_circle(r1,v1,cov1,r2,v2,cov2,HBR,params)
